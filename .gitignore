@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Environment files (keep the .env.example files)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build output
+dist/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Uploaded salary slips (runtime data, not source)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
