@@ -8,6 +8,8 @@ Collection) in a role-guarded operations dashboard.
 
 **Live:** [credit-sea-lms-chi.vercel.app](https://credit-sea-lms-chi.vercel.app) · API health: [credit-sea-assignment-api.vercel.app/api/health](https://credit-sea-assignment-api.vercel.app/api/health)
 
+**Demo video (3–5 min):** [youtube.com/watch?v=ejIRtcZGzec](https://www.youtube.com/watch?v=ejIRtcZGzec) — borrower applies (BRE fail & pass) → sanction → disbursement → payments → auto-close
+
 ---
 
 ## Login credentials (seeded)
