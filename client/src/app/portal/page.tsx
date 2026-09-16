@@ -58,7 +58,7 @@ export default function PortalHomePage() {
         />
       )}
 
-      <ol className="grid gap-4 sm:grid-cols-2">
+      <ol className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {steps.map((step, index) => {
           const badge = STATUS_BADGE[step.status];
           const isActionable = step.status !== 'locked';

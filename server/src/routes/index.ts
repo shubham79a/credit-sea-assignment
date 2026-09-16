@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import applicationRoutes from './application.routes';
 import authRoutes from './auth.routes';
+import leadRoutes from './lead.routes';
 import loanRoutes from './loan.routes';
 
 /**
@@ -16,5 +17,6 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/loans', loanRoutes);
+router.use('/leads', leadRoutes);
 
 export default router;

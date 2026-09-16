@@ -51,6 +51,7 @@ export default function RegisterPage() {
         <Input
           label="Full name"
           autoComplete="name"
+          placeholder="Rahul Sharma"
           required
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -60,6 +61,7 @@ export default function RegisterPage() {
           label="Email"
           type="email"
           autoComplete="email"
+          placeholder="you@example.com"
           required
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -69,6 +71,7 @@ export default function RegisterPage() {
           label="Password"
           type="password"
           autoComplete="new-password"
+          placeholder="Create a password"
           required
           minLength={6}
           hint="At least 6 characters"
@@ -80,6 +83,7 @@ export default function RegisterPage() {
           label="Confirm password"
           type="password"
           autoComplete="new-password"
+          placeholder="Re-enter your password"
           required
           value={form.confirm}
           onChange={(e) => setForm({ ...form, confirm: e.target.value })}

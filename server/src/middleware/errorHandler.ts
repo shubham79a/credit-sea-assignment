@@ -9,6 +9,13 @@ export function notFoundHandler(req: Request, _res: Response, next: NextFunction
   next(ApiError.notFound(`Route ${req.method} ${req.originalUrl} not found`));
 }
 
+/** Human names for unique-indexed fields, used in 409 messages. */
+const DUPLICATE_FIELD_LABELS: Record<string, string> = {
+  email: 'email',
+  utr: 'UTR number',
+  user: 'user',
+};
+
 interface ErrorBody {
   success: false;
   message: string;
@@ -47,7 +54,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   } else if (isMongoDuplicateKeyError(err)) {
     statusCode = 409;
     const field = Object.keys(err.keyValue ?? {})[0] ?? 'field';
-    message = `A record with this ${field} already exists`;
+    const label = DUPLICATE_FIELD_LABELS[field] ?? field;
+    message = `A record with this ${label} already exists`;
   } else if (err instanceof SyntaxError && 'body' in err) {
     statusCode = 400;
     message = 'Malformed JSON body';

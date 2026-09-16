@@ -30,15 +30,29 @@ export const ACTIVE_LOAN_STATUSES: LoanStatus[] = [
  * Single source of truth for which transitions are legal and which role may
  * perform them. ADMIN is implicitly allowed everywhere by the RBAC middleware.
  */
-export const LOAN_TRANSITIONS: Record<
-  string,
-  { from: LoanStatus; to: LoanStatus; allowedRoles: Role[] }
-> = {
+export const LOAN_TRANSITIONS = {
   SANCTION: { from: LOAN_STATUS.APPLIED, to: LOAN_STATUS.SANCTIONED, allowedRoles: [ROLES.SANCTION] },
   REJECT: { from: LOAN_STATUS.APPLIED, to: LOAN_STATUS.REJECTED, allowedRoles: [ROLES.SANCTION] },
   DISBURSE: { from: LOAN_STATUS.SANCTIONED, to: LOAN_STATUS.DISBURSED, allowedRoles: [ROLES.DISBURSEMENT] },
   CLOSE: { from: LOAN_STATUS.DISBURSED, to: LOAN_STATUS.CLOSED, allowedRoles: [ROLES.COLLECTION] },
+} satisfies Record<string, { from: LoanStatus; to: LoanStatus; allowedRoles: Role[] }>;
+
+export type LoanAction = keyof typeof LOAN_TRANSITIONS;
+
+/**
+ * Which loan statuses each dashboard module may list. ADMIN sees everything.
+ * Used by the RBAC layer so a role can't read another module's queue.
+ */
+export const MODULE_STATUSES: Partial<Record<Role, LoanStatus[]>> = {
+  [ROLES.SANCTION]: [LOAN_STATUS.APPLIED, LOAN_STATUS.SANCTIONED, LOAN_STATUS.REJECTED],
+  [ROLES.DISBURSEMENT]: [LOAN_STATUS.SANCTIONED, LOAN_STATUS.DISBURSED],
+  [ROLES.COLLECTION]: [LOAN_STATUS.DISBURSED, LOAN_STATUS.CLOSED],
 };
+
+export function statusesVisibleTo(role: Role): LoanStatus[] {
+  if (role === ROLES.ADMIN) return ALL_LOAN_STATUSES;
+  return MODULE_STATUSES[role] ?? [];
+}
 
 /** Business constants from the assignment brief. */
 export const LOAN_RULES = {

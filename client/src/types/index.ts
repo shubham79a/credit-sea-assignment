@@ -179,3 +179,70 @@ export interface ApplyLoanInput {
   principal: number;
   tenureDays: number;
 }
+
+// ---------------------------------------------------------------------------
+// Dashboard (executive) shapes
+// ---------------------------------------------------------------------------
+
+/** Loan as returned to executives: user/application populated. */
+export interface LoanWithRelations extends Omit<Loan, 'user' | 'application'> {
+  user: { id: string; name: string; email: string };
+  application: {
+    id: string;
+    personalDetails: PersonalDetails;
+    salarySlip?: SalarySlip;
+    bre: { passed: boolean };
+  };
+}
+
+export const LEAD_STAGES = ['REGISTERED', 'BRE_FAILED', 'DETAILS_DONE', 'DOCS_DONE'] as const;
+export type LeadStage = (typeof LEAD_STAGES)[number];
+
+export const LEAD_STAGE_LABELS: Record<LeadStage, string> = {
+  REGISTERED: 'Registered',
+  BRE_FAILED: 'Not eligible',
+  DETAILS_DONE: 'Details submitted',
+  DOCS_DONE: 'Ready to apply',
+};
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  registeredAt: string;
+  stage: LeadStage;
+  application: {
+    fullName: string;
+    monthlySalary: number;
+    employmentMode: EmploymentMode;
+    breFailures: RuleFailure[];
+    updatedAt: string;
+  } | null;
+}
+
+export interface LeadsResult {
+  leads: Lead[];
+  stats: { total: number; byStage: Record<LeadStage, number> };
+}
+
+export interface Payment {
+  id: string;
+  loan: string;
+  borrower: string;
+  utr: string;
+  amount: number;
+  paidAt: string;
+  recordedBy: string;
+  createdAt: string;
+}
+
+export interface RecordPaymentInput {
+  utr: string;
+  amount: number;
+  paidAt: string; // YYYY-MM-DD
+}
+
+export interface DashboardSummary {
+  loansByStatus: Partial<Record<LoanStatus, number>>;
+  visibleStatuses: LoanStatus[];
+}

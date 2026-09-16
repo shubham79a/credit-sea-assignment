@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { canAccessModule, findModuleByPath } from '@/lib/dashboard-modules';
 import { ROUTES, homeForRole } from '@/lib/routes';
 import { TOKEN_COOKIE, decodeToken } from '@/lib/token';
 import { EXECUTIVE_ROLES, ROLES } from '@/types';
@@ -44,6 +45,12 @@ export function proxy(request: NextRequest) {
       (pathname.startsWith(ROUTES.portal) && !isBorrower)
     ) {
       return NextResponse.redirect(new URL(home, request.url));
+    }
+
+    // Executives may only open their own module (ADMIN: all). Wrong module → dashboard home.
+    const targetModule = findModuleByPath(pathname);
+    if (targetModule && !canAccessModule(payload.role, targetModule)) {
+      return NextResponse.redirect(new URL(ROUTES.dashboard, request.url));
     }
   }
 

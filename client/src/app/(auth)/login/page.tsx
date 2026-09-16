@@ -46,6 +46,7 @@ export default function LoginPage() {
           label="Email"
           type="email"
           autoComplete="email"
+          placeholder="you@example.com"
           required
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -55,6 +56,7 @@ export default function LoginPage() {
           label="Password"
           type="password"
           autoComplete="current-password"
+          placeholder="Enter your password"
           required
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -72,6 +74,38 @@ export default function LoginPage() {
           Create an account
         </Link>
       </p>
+
+      <div className="mt-6 border-t border-slate-200 pt-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Demo accounts</p>
+        <p className="mt-1 text-xs text-slate-500">Click a role to fill in its seeded credentials.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {DEMO_ACCOUNTS.map((account) => (
+            <button
+              key={account.email}
+              type="button"
+              onClick={() => {
+                setForm({ email: account.email, password: DEMO_PASSWORD });
+                setError(null);
+                setFieldErrors({});
+              }}
+              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              {account.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   );
 }
+
+/** Accounts created by `npm run seed` (server/src/scripts/seed.ts). */
+const DEMO_PASSWORD = 'Password@123';
+const DEMO_ACCOUNTS = [
+  { label: 'Admin', email: 'admin@creditsea.com' },
+  { label: 'Sales', email: 'sales@creditsea.com' },
+  { label: 'Sanction', email: 'sanction@creditsea.com' },
+  { label: 'Disbursement', email: 'disbursement@creditsea.com' },
+  { label: 'Collection', email: 'collection@creditsea.com' },
+  { label: 'Borrower', email: 'borrower@creditsea.com' },
+];

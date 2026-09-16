@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from 'react';
+import { useId, type ClipboardEvent, type InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -9,6 +9,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, error, hint, id, className = '', ...props }: InputProps) {
   const autoId = useId();
   const inputId = id ?? autoId;
+
+  // Password fields must not be copyable to the clipboard.
+  const isPassword = props.type === 'password';
+  const blockClipboard = (event: ClipboardEvent<HTMLInputElement>) => event.preventDefault();
 
   return (
     <div className="space-y-1.5">
@@ -27,6 +31,7 @@ export function Input({ label, error, hint, id, className = '', ...props }: Inpu
             : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200',
           className,
         ].join(' ')}
+        {...(isPassword ? { onCopy: blockClipboard, onCut: blockClipboard } : {})}
         {...props}
       />
       {error ? (

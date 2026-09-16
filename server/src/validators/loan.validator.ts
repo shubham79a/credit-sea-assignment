@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LOAN_RULES } from '../constants/loan';
+import { ALL_LOAN_STATUSES, LOAN_RULES } from '../constants/loan';
 
 /**
  * Only the two borrower-controlled inputs are accepted. Interest and total are
@@ -19,3 +19,24 @@ export const applyLoanSchema = z.object({
 });
 
 export type ApplyLoanInput = z.infer<typeof applyLoanSchema>;
+
+/** Sanction module: a rejection must carry a reason the borrower will see. */
+export const rejectLoanSchema = z.object({
+  reason: z
+    .string({ error: 'A rejection reason is required' })
+    .trim()
+    .min(5, 'Rejection reason must be at least 5 characters')
+    .max(500, 'Rejection reason must be at most 500 characters'),
+});
+
+export type RejectLoanInput = z.infer<typeof rejectLoanSchema>;
+
+/** `?status=` filter for the executive listing. */
+export const listLoansQuerySchema = z.object({
+  status: z.enum(ALL_LOAN_STATUSES, { error: 'status must be a valid loan status' }),
+});
+
+/** `:id` route param must be a Mongo ObjectId. */
+export const loanIdParamSchema = z.object({
+  id: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid loan id'),
+});
