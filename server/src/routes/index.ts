@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import applicationRoutes from './application.routes';
 import authRoutes from './auth.routes';
 
 /**
@@ -12,5 +13,6 @@ router.get('/health', (_req, res) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/applications', applicationRoutes);
 
 export default router;

@@ -1,4 +1,4 @@
-import type { ApiFailure, ApiSuccess } from '@/types';
+import type { ApiFailure, ApiSuccess, RuleFailure } from '@/types';
 import { getToken } from './token';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api';
@@ -16,7 +16,16 @@ export class ApiError extends Error {
 
   /** Convenience: map field errors to `{ email: 'msg', ... }` for forms. */
   get fieldErrors(): Record<string, string> {
-    return Object.fromEntries((this.errors ?? []).map((e) => [e.field, e.message]));
+    return Object.fromEntries(
+      (this.errors ?? []).filter((e) => e.field).map((e) => [e.field as string, e.message]),
+    );
+  }
+
+  /** Business-rule failures (422 from the BRE) — items that carry a `rule`. */
+  get ruleErrors(): RuleFailure[] {
+    return (this.errors ?? [])
+      .filter((e) => e.rule)
+      .map((e) => ({ rule: e.rule as string, message: e.message }));
   }
 }
 
