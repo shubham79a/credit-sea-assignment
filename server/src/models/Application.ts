@@ -10,6 +10,15 @@ export interface IPersonalDetails {
   employmentMode: EmploymentMode;
 }
 
+export interface ISalarySlip {
+  fileName: string; // name on disk: <userId>-<uuid>.<ext>
+  originalName: string; // client's filename, display only
+  mimeType: string;
+  size: number; // bytes
+  url: string; // public path, e.g. /uploads/<fileName>
+  uploadedAt: Date;
+}
+
 /**
  * One Application per borrower. It carries the eligibility side of the journey
  * (personal details → BRE verdict → salary slip); the actual loan request is a
@@ -19,6 +28,7 @@ export interface IApplication {
   user: Types.ObjectId;
   personalDetails: IPersonalDetails;
   bre: BreResult;
+  salarySlip?: ISalarySlip;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,11 +64,24 @@ const breSchema = new Schema<BreResult>(
   { _id: false },
 );
 
+const salarySlipSchema = new Schema<ISalarySlip>(
+  {
+    fileName: { type: String, required: true },
+    originalName: { type: String, required: true },
+    mimeType: { type: String, required: true },
+    size: { type: Number, required: true, min: 0 },
+    url: { type: String, required: true },
+    uploadedAt: { type: Date, required: true },
+  },
+  { _id: false },
+);
+
 const applicationSchema = new Schema<IApplication, ApplicationModel>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
     personalDetails: { type: personalDetailsSchema, required: true },
     bre: { type: breSchema, required: true },
+    salarySlip: { type: salarySlipSchema, required: false },
   },
   {
     timestamps: true,

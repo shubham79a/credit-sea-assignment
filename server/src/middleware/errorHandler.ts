@@ -3,6 +3,7 @@ import { MulterError } from 'multer';
 import { Error as MongooseError } from 'mongoose';
 import { ZodError } from 'zod';
 import { env } from '../config/env';
+import { SALARY_SLIP_FIELD } from '../constants/upload';
 import { ApiError } from '../utils/ApiError';
 
 /** 404 for any route that no router claimed. */
@@ -51,7 +52,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     message = `A record with this ${field} already exists`;
   } else if (err instanceof MulterError) {
     statusCode = 400;
-    message = err.code === 'LIMIT_FILE_SIZE' ? 'File exceeds the maximum allowed size' : err.message;
+    message = multerMessage(err);
   } else if (err instanceof SyntaxError && 'body' in err) {
     statusCode = 400;
     message = 'Malformed JSON body';
@@ -70,4 +71,17 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
 
 function isMongoDuplicateKeyError(err: unknown): err is { code: number; keyValue?: Record<string, unknown> } {
   return typeof err === 'object' && err !== null && (err as { code?: number }).code === 11000;
+}
+
+function multerMessage(err: MulterError): string {
+  switch (err.code) {
+    case 'LIMIT_FILE_SIZE':
+      return `File exceeds the maximum size of ${env.MAX_FILE_SIZE_MB} MB`;
+    case 'LIMIT_FILE_COUNT':
+      return 'Only one file may be uploaded at a time';
+    case 'LIMIT_UNEXPECTED_FILE':
+      return `Unexpected file field "${err.field}" — use "${SALARY_SLIP_FIELD}"`;
+    default:
+      return err.message;
+  }
 }

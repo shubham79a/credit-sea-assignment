@@ -18,3 +18,17 @@ export async function submitPersonalDetails(input: PersonalDetailsInput): Promis
   );
   return application;
 }
+
+/**
+ * Uploads (or replaces) the salary slip as multipart/form-data.
+ * Throws `ApiError` 400 for type/size problems, 409 if the BRE hasn't passed.
+ */
+export async function uploadSalarySlip(file: File): Promise<Application> {
+  const body = new FormData();
+  body.append('salarySlip', file);
+  const { application } = await api.post<{ application: Application }>(
+    '/applications/me/salary-slip',
+    body,
+  );
+  return application;
+}

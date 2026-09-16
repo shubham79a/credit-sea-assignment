@@ -24,9 +24,12 @@ export function derivePortalSteps(application: Application | null): PortalStep[]
   const detailsPassed = application?.bre.passed === true;
   const detailsFailed = application !== null && application?.bre.passed === false;
 
+  const slipUploaded = detailsPassed && Boolean(application?.salarySlip);
+
   const detailsStatus: StepStatus = detailsPassed ? 'done' : detailsFailed ? 'blocked' : 'current';
-  // Later parts extend this: salary slip → loan → tracking.
-  const salarySlipStatus: StepStatus = detailsPassed ? 'current' : 'locked';
+  const salarySlipStatus: StepStatus = slipUploaded ? 'done' : detailsPassed ? 'current' : 'locked';
+  // Later parts extend this: loan → tracking.
+  const loanStatus: StepStatus = slipUploaded ? 'current' : 'locked';
 
   return [
     {
@@ -48,7 +51,7 @@ export function derivePortalSteps(application: Application | null): PortalStep[]
       title: 'Loan configuration',
       description: 'Choose amount and tenure, review interest, and apply.',
       href: '/portal/loan',
-      status: 'locked',
+      status: loanStatus,
     },
     {
       key: 'track',

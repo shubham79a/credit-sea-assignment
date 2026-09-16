@@ -97,11 +97,21 @@ export interface BreResult {
   evaluatedAt: string;
 }
 
+export interface SalarySlip {
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  size: number; // bytes
+  url: string; // server-relative, e.g. /uploads/<fileName> — see fileUrl()
+  uploadedAt: string;
+}
+
 export interface Application {
   id: string;
   user: string;
   personalDetails: PersonalDetails;
   bre: BreResult;
+  salarySlip?: SalarySlip;
   createdAt: string;
   updatedAt: string;
 }
