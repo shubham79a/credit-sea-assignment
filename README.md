@@ -6,8 +6,7 @@ Collection) in a role-guarded operations dashboard.
 
 **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Node.js · Express 5 · MongoDB Atlas · Mongoose · JWT + bcrypt · Cloudinary (salary slips) · Vercel
 
-**Live:** client `https://<client>.vercel.app` · API `https://<api>.vercel.app/api/health`
-*(replace with your deployment URLs)*
+**Live:** [credit-sea-lms-chi.vercel.app](https://credit-sea-lms-chi.vercel.app) · API health: [credit-sea-assignment-api.vercel.app/api/health](https://credit-sea-assignment-api.vercel.app/api/health)
 
 ---
 
