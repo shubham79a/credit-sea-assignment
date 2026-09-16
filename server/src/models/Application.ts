@@ -11,11 +11,11 @@ export interface IPersonalDetails {
 }
 
 export interface ISalarySlip {
-  fileName: string; // name on disk: <userId>-<uuid>.<ext>
+  publicId: string; // Cloudinary public_id: salary-slips/<userId>/<uuid>
   originalName: string; // client's filename, display only
   mimeType: string;
-  size: number; // bytes
-  url: string; // public path, e.g. /uploads/<fileName>
+  size: number; // bytes, as reported by Cloudinary
+  url: string; // absolute https://res.cloudinary.com/... URL
   uploadedAt: Date;
 }
 
@@ -66,7 +66,7 @@ const breSchema = new Schema<BreResult>(
 
 const salarySlipSchema = new Schema<ISalarySlip>(
   {
-    fileName: { type: String, required: true },
+    publicId: { type: String, required: true },
     originalName: { type: String, required: true },
     mimeType: { type: String, required: true },
     size: { type: Number, required: true, min: 0 },

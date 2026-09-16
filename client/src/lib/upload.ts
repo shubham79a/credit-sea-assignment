@@ -1,7 +1,9 @@
+import type { UploadSignature } from '@/types';
+
 /**
  * Client-side mirror of the server's salary-slip upload rules
  * (server/src/constants/upload.ts + MAX_FILE_SIZE_MB). Gives instant feedback
- * before the request; the server re-validates and is authoritative.
+ * before the request; the server re-validates the stored asset and is authoritative.
  */
 export const MAX_FILE_SIZE_MB = 5;
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -31,12 +33,25 @@ export function formatBytes(bytes: number): string {
 }
 
 /**
- * Uploaded files are served by the API server (not Next.js), so a
- * server-relative `/uploads/...` path must be prefixed with the API origin.
+ * Sends the file straight to Cloudinary using a signature issued by our API.
+ * The bytes never touch our server (keeps us under Vercel's request-body cap).
+ * Resolves to Cloudinary's `public_id`; throws a readable Error on failure.
  */
-const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000/api').replace(
-  /\/api\/?$/,
-  '',
-);
+export async function uploadToCloudinary(file: File, ticket: UploadSignature): Promise<string> {
+  const body = new FormData();
+  body.append('file', file);
+  body.append('api_key', ticket.apiKey);
+  body.append('timestamp', String(ticket.timestamp));
+  body.append('signature', ticket.signature);
+  body.append('public_id', ticket.publicId);
 
-export const fileUrl = (path: string): string => `${API_ORIGIN}${path}`;
+  const response = await fetch(ticket.uploadUrl, { method: 'POST', body });
+  const payload = (await response.json().catch(() => null)) as
+    | { public_id?: string; error?: { message?: string } }
+    | null;
+
+  if (!response.ok || !payload?.public_id) {
+    throw new Error(payload?.error?.message ?? 'Upload to storage failed. Please try again.');
+  }
+  return payload.public_id;
+}

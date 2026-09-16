@@ -11,7 +11,7 @@ import { useApplication } from '@/hooks/useApplication';
 import { ApiError } from '@/lib/api';
 import { uploadSalarySlip } from '@/lib/applications';
 import { formatDate } from '@/lib/format';
-import { fileUrl, formatBytes, validateSalarySlip } from '@/lib/upload';
+import { formatBytes, validateSalarySlip } from '@/lib/upload';
 import type { Application, SalarySlip } from '@/types';
 
 export default function SalarySlipPage() {
@@ -87,8 +87,11 @@ function SalarySlipStep({
       await onUploaded();
       router.push('/portal/loan');
     } catch (err) {
+      // ApiError from our API (sign/link) or a plain Error from the Cloudinary step.
       setError(
-        err instanceof ApiError ? err.message : 'Upload failed. Check your connection and try again.',
+        err instanceof ApiError || err instanceof Error
+          ? err.message
+          : 'Upload failed. Check your connection and try again.',
       );
       setUploading(false);
     }
@@ -174,8 +177,8 @@ function ExistingSlipCard({
       <div className="flex flex-col gap-4 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-2xl">
           {isImage ? (
-            // eslint-disable-next-line @next/next/no-img-element -- external API origin, not optimised by Next
-            <img src={fileUrl(slip.url)} alt="" className="h-full w-full object-cover" />
+            // eslint-disable-next-line @next/next/no-img-element -- Cloudinary URL, not optimised by Next
+            <img src={slip.url} alt="" className="h-full w-full object-cover" />
           ) : (
             <span aria-hidden>📄</span>
           )}
@@ -187,7 +190,7 @@ function ExistingSlipCard({
           </p>
         </div>
         <div className="flex gap-2">
-          <a href={fileUrl(slip.url)} target="_blank" rel="noopener noreferrer">
+          <a href={slip.url} target="_blank" rel="noopener noreferrer">
             <Button variant="secondary" size="sm">
               View
             </Button>

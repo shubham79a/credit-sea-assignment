@@ -19,3 +19,11 @@ export const personalDetailsSchema = z.object({
 });
 
 export type PersonalDetailsInput = z.infer<typeof personalDetailsSchema>;
+
+/** Sent after the browser has uploaded straight to Cloudinary. */
+export const linkSalarySlipSchema = z.object({
+  publicId: z.string().trim().min(1, 'publicId is required').max(300),
+  originalName: z.string().trim().min(1, 'originalName is required').max(255),
+});
+
+export type LinkSalarySlipInput = z.infer<typeof linkSalarySlipSchema>;

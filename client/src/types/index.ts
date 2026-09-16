@@ -98,12 +98,22 @@ export interface BreResult {
 }
 
 export interface SalarySlip {
-  fileName: string;
+  publicId: string; // Cloudinary public_id
   originalName: string;
   mimeType: string;
   size: number; // bytes
-  url: string; // server-relative, e.g. /uploads/<fileName> — see fileUrl()
+  url: string; // absolute Cloudinary URL
   uploadedAt: string;
+}
+
+/** Signed, single-use ticket from the API for a direct browser → Cloudinary upload. */
+export interface UploadSignature {
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  signature: string;
+  publicId: string;
+  uploadUrl: string;
 }
 
 export interface Application {
@@ -114,4 +124,58 @@ export interface Application {
   salarySlip?: SalarySlip;
   createdAt: string;
   updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// Loans (mirrors server/src/models/Loan.ts + constants/loan.ts)
+// ---------------------------------------------------------------------------
+
+export const LOAN_STATUS = {
+  APPLIED: 'APPLIED',
+  SANCTIONED: 'SANCTIONED',
+  REJECTED: 'REJECTED',
+  DISBURSED: 'DISBURSED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type LoanStatus = (typeof LOAN_STATUS)[keyof typeof LOAN_STATUS];
+
+export const LOAN_STATUS_LABELS: Record<LoanStatus, string> = {
+  APPLIED: 'Applied',
+  SANCTIONED: 'Sanctioned',
+  REJECTED: 'Rejected',
+  DISBURSED: 'Disbursed',
+  CLOSED: 'Closed',
+};
+
+export const ACTIVE_LOAN_STATUSES: LoanStatus[] = ['APPLIED', 'SANCTIONED', 'DISBURSED'];
+
+export interface StatusHistoryEntry {
+  from: LoanStatus | null;
+  to: LoanStatus;
+  by: string;
+  at: string;
+  reason?: string;
+}
+
+export interface Loan {
+  id: string;
+  user: string;
+  application: string;
+  principal: number;
+  tenureDays: number;
+  interestRate: number;
+  interest: number;
+  totalRepayment: number;
+  amountPaid: number;
+  outstanding: number;
+  status: LoanStatus;
+  statusHistory: StatusHistoryEntry[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApplyLoanInput {
+  principal: number;
+  tenureDays: number;
 }

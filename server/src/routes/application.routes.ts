@@ -4,9 +4,8 @@ import * as applicationController from '../controllers/application.controller';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { requireEligibleApplication } from '../middleware/requireEligibleApplication';
-import { uploadSalarySlip } from '../middleware/upload';
 import { validate } from '../middleware/validate';
-import { personalDetailsSchema } from '../validators/application.validator';
+import { linkSalarySlipSchema, personalDetailsSchema } from '../validators/application.validator';
 
 const router = Router();
 
@@ -24,15 +23,18 @@ router.put(
 );
 
 /**
- * POST /api/applications/me/salary-slip — multipart, field "salarySlip".
- * Eligibility is checked BEFORE multer runs so ineligible users never hit disk.
- * 400 bad type/size/no file · 409 BRE not passed
+ * Salary slip — two-step, serverless-safe upload:
+ *   POST /me/salary-slip/sign  → signed Cloudinary upload params (409 if BRE not passed)
+ *   (browser uploads the file straight to Cloudinary)
+ *   POST /me/salary-slip       → { publicId, originalName }; API verifies the asset and links it
+ *                                 400 bad type/size/unknown asset · 409 BRE not passed
  */
+router.post('/me/salary-slip/sign', requireEligibleApplication, applicationController.signSalarySlipUpload);
 router.post(
   '/me/salary-slip',
   requireEligibleApplication,
-  uploadSalarySlip,
-  applicationController.uploadSalarySlip,
+  validate(linkSalarySlipSchema),
+  applicationController.linkSalarySlip,
 );
 
 export default router;

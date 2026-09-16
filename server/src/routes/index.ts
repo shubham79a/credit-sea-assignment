@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import applicationRoutes from './application.routes';
 import authRoutes from './auth.routes';
+import loanRoutes from './loan.routes';
 
 /**
  * API root. Every feature router is mounted here so `app.ts` only needs to
@@ -14,5 +15,6 @@ router.get('/health', (_req, res) => {
 
 router.use('/auth', authRoutes);
 router.use('/applications', applicationRoutes);
+router.use('/loans', loanRoutes);
 
 export default router;

@@ -1,15 +1,17 @@
-/** Multipart field name the client must use for the salary slip. */
-export const SALARY_SLIP_FIELD = 'salarySlip';
-
 /**
- * Allowed salary-slip mimetypes → the extension we store the file with.
- * The stored extension is derived from the validated mimetype, never from
- * the client-supplied filename.
+ * Salary-slip upload rules. Files travel browser → Cloudinary directly (signed
+ * by this API), so validation happens on the asset Cloudinary reports back.
  */
-export const SALARY_SLIP_MIME_TYPES: Record<string, string> = {
-  'application/pdf': 'pdf',
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
+
+/** Cloudinary folder prefix; a user's assets live under `<prefix>/<userId>/`. */
+export const SALARY_SLIP_FOLDER = 'salary-slips';
+
+/** Cloudinary `format` values we accept → the mimetype we record. */
+export const SALARY_SLIP_FORMATS: Record<string, string> = {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
 };
 
 export const SALARY_SLIP_ALLOWED_LABEL = 'PDF, JPG or PNG';

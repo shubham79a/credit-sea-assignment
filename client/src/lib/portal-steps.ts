@@ -1,4 +1,4 @@
-import type { Application } from '@/types';
+import { ACTIVE_LOAN_STATUSES, type Application, type Loan } from '@/types';
 
 export type StepStatus = 'done' | 'current' | 'blocked' | 'locked';
 
@@ -11,7 +11,7 @@ export interface PortalStep {
 }
 
 /**
- * Derives the borrower's progress from their application instead of storing a
+ * Derives the borrower's progress from their data instead of storing a
  * "current step" counter — the data itself is the source of truth, so it can
  * never drift out of sync.
  *
@@ -20,16 +20,18 @@ export interface PortalStep {
  *   blocked  — step attempted but must be fixed (BRE failed)
  *   locked   — not reachable yet
  */
-export function derivePortalSteps(application: Application | null): PortalStep[] {
+export function derivePortalSteps(application: Application | null, loans: Loan[] = []): PortalStep[] {
   const detailsPassed = application?.bre.passed === true;
   const detailsFailed = application !== null && application?.bre.passed === false;
-
   const slipUploaded = detailsPassed && Boolean(application?.salarySlip);
+  const activeLoan = loans.find((loan) => ACTIVE_LOAN_STATUSES.includes(loan.status));
+  const hasAnyLoan = loans.length > 0;
 
   const detailsStatus: StepStatus = detailsPassed ? 'done' : detailsFailed ? 'blocked' : 'current';
   const salarySlipStatus: StepStatus = slipUploaded ? 'done' : detailsPassed ? 'current' : 'locked';
-  // Later parts extend this: loan → tracking.
-  const loanStatus: StepStatus = slipUploaded ? 'current' : 'locked';
+  // A rejected/closed loan re-opens the loan step so the borrower can apply again.
+  const loanStatus: StepStatus = activeLoan ? 'done' : slipUploaded ? 'current' : 'locked';
+  const trackStatus: StepStatus = activeLoan ? 'current' : hasAnyLoan ? 'done' : 'locked';
 
   return [
     {
@@ -58,7 +60,7 @@ export function derivePortalSteps(application: Application | null): PortalStep[]
       title: 'Track application',
       description: 'Follow your loan from review through disbursement to closure.',
       href: '/portal/track',
-      status: 'locked',
+      status: trackStatus,
     },
   ];
 }

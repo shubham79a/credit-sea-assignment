@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import { SALARY_SLIP_ALLOWED_LABEL } from '../constants/upload';
 import * as applicationService from '../services/application.service';
-import { ApiError } from '../utils/ApiError';
+import { createSalarySlipSignature } from '../services/file.service';
+import { assertNoActiveLoan } from '../services/loan.service';
 import { sendSuccess } from '../utils/response';
 
 export async function getMine(req: Request, res: Response): Promise<void> {
@@ -14,11 +14,16 @@ export async function submitPersonalDetails(req: Request, res: Response): Promis
   sendSuccess(res, { application }, 200, 'Eligibility check passed');
 }
 
-export async function uploadSalarySlip(req: Request, res: Response): Promise<void> {
-  if (!req.file) {
-    throw ApiError.badRequest(`Attach a salary slip (${SALARY_SLIP_ALLOWED_LABEL})`);
-  }
+/** Step 1 of the upload: hand the browser a signed, single-use upload ticket. */
+export async function signSalarySlipUpload(req: Request, res: Response): Promise<void> {
+  await assertNoActiveLoan(req.user!.id); // fail fast, before the browser uploads anything
+  const signature = createSalarySlipSignature(req.user!.id);
+  sendSuccess(res, { upload: signature });
+}
+
+/** Step 2 of the upload: verify the Cloudinary asset and link it to the application. */
+export async function linkSalarySlip(req: Request, res: Response): Promise<void> {
   // `requireEligibleApplication` guarantees req.application on this route.
-  const application = await applicationService.attachSalarySlip(req.application!, req.file);
+  const application = await applicationService.attachSalarySlip(req.application!, req.body);
   sendSuccess(res, { application }, 200, 'Salary slip uploaded');
 }

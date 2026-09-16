@@ -19,6 +19,13 @@ export type LoanStatus = (typeof LOAN_STATUS)[keyof typeof LOAN_STATUS];
 
 export const ALL_LOAN_STATUSES = Object.values(LOAN_STATUS) as LoanStatus[];
 
+/** A borrower may hold at most one loan in these states at a time. */
+export const ACTIVE_LOAN_STATUSES: LoanStatus[] = [
+  LOAN_STATUS.APPLIED,
+  LOAN_STATUS.SANCTIONED,
+  LOAN_STATUS.DISBURSED,
+];
+
 /**
  * Single source of truth for which transitions are legal and which role may
  * perform them. ADMIN is implicitly allowed everywhere by the RBAC middleware.

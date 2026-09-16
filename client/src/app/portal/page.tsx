@@ -7,6 +7,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { useApplication } from '@/hooks/useApplication';
+import { useMyLoans } from '@/hooks/useMyLoans';
 import { derivePortalSteps, nextStep, type StepStatus } from '@/lib/portal-steps';
 
 const STATUS_BADGE: Record<StepStatus, { label: string; className: string }> = {
@@ -18,7 +19,10 @@ const STATUS_BADGE: Record<StepStatus, { label: string; className: string }> = {
 
 export default function PortalHomePage() {
   const { user } = useAuth();
-  const { application, loading, error } = useApplication();
+  const { application, loading: appLoading, error: appError } = useApplication();
+  const { loans, loading: loansLoading, error: loansError } = useMyLoans();
+  const loading = appLoading || loansLoading;
+  const error = appError ?? loansError;
 
   if (loading) {
     return (
@@ -28,7 +32,7 @@ export default function PortalHomePage() {
     );
   }
 
-  const steps = derivePortalSteps(application);
+  const steps = derivePortalSteps(application, loans);
   const current = nextStep(steps);
   const breFailed = application !== null && !application.bre.passed;
 

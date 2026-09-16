@@ -1,4 +1,3 @@
-import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -11,7 +10,7 @@ export function createApp(): express.Express {
   const app = express();
 
   // --- Security & parsing -------------------------------------------------
-  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(helmet());
   app.use(
     cors({
       origin: env.clientOrigins,
@@ -24,9 +23,6 @@ export function createApp(): express.Express {
   if (!env.isProduction) {
     app.use(morgan('dev'));
   }
-
-  // --- Static: uploaded salary slips --------------------------------------
-  app.use('/uploads', express.static(path.resolve(process.cwd(), env.UPLOAD_DIR)));
 
   // --- API ----------------------------------------------------------------
   app.use('/api', apiRouter);

@@ -1,8 +1,9 @@
-import { publicUrlFor, removeStoredFile } from '../middleware/upload';
 import { Application, type ApplicationDocument } from '../models/Application';
 import { ApiError } from '../utils/ApiError';
-import type { PersonalDetailsInput } from '../validators/application.validator';
+import type { LinkSalarySlipInput, PersonalDetailsInput } from '../validators/application.validator';
 import { evaluateBre } from './bre.service';
+import { destroyAsset, ownsAsset, verifySalarySlipAsset } from './file.service';
+import { assertNoActiveLoan } from './loan.service';
 
 export async function getMyApplication(userId: string): Promise<ApplicationDocument | null> {
   return Application.findOne({ user: userId });
@@ -19,6 +20,8 @@ export async function submitPersonalDetails(
   userId: string,
   input: PersonalDetailsInput,
 ): Promise<ApplicationDocument> {
+  await assertNoActiveLoan(userId);
+
   const bre = evaluateBre(input);
 
   const application = await Application.findOneAndUpdate(
@@ -35,27 +38,39 @@ export async function submitPersonalDetails(
 }
 
 /**
- * Links an uploaded salary slip to the application. Re-uploading replaces the
- * previous file (best-effort removal from disk) rather than accumulating copies.
+ * Links a salary slip the browser uploaded directly to Cloudinary. The asset is
+ * verified against Cloudinary first (ownership, type, size); re-uploading
+ * replaces the previous asset rather than accumulating copies.
  */
 export async function attachSalarySlip(
   application: ApplicationDocument,
-  file: Express.Multer.File,
+  input: LinkSalarySlipInput,
 ): Promise<ApplicationDocument> {
-  const previous = application.salarySlip?.fileName;
+  const userId = String(application.user);
+  try {
+    await assertNoActiveLoan(userId);
+  } catch (error) {
+    // The asset is already in Cloudinary — don't leave it orphaned. Only ever
+    // destroy assets inside this user's own namespace.
+    if (ownsAsset(userId, input.publicId)) await destroyAsset(input.publicId);
+    throw error;
+  }
+
+  const asset = await verifySalarySlipAsset(userId, input.publicId);
+  const previous = application.salarySlip?.publicId;
 
   application.salarySlip = {
-    fileName: file.filename,
-    originalName: file.originalname,
-    mimeType: file.mimetype,
-    size: file.size,
-    url: publicUrlFor(file.filename),
+    publicId: asset.publicId,
+    originalName: input.originalName,
+    mimeType: asset.mimeType,
+    size: asset.size,
+    url: asset.url,
     uploadedAt: new Date(),
   };
   await application.save();
 
-  if (previous && previous !== file.filename) {
-    await removeStoredFile(previous);
+  if (previous && previous !== asset.publicId) {
+    await destroyAsset(previous);
   }
 
   return application;
